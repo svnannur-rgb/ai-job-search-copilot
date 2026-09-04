@@ -46,7 +46,7 @@ fetch('http://127.0.0.1:8000/analyze', {
 
   <input
     type="file"
-    accept=".pdf,.doc,.docx"
+    accept=".pdf"
     onChange={(event) => {
       const file = event.target.files?.[0]
 
