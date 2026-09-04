@@ -17,12 +17,21 @@ function App() {
       return
     }
     
-    fetch('http://127.0.0.1:8000/test')
-      .then((response) => response.json())
-      .then((data) => {
-        console.log(data)
-      })
-  }
+    const formData = new FormData()
+
+formData.append('resume', resumeFile)
+formData.append('job_description', jobDescription)
+
+fetch('http://127.0.0.1:8000/analyze', {
+  method: 'POST',
+  body: formData,
+})
+  .then((response) => response.json())
+  .then((data) => {
+    console.log(data)
+  })
+}
+
   return (
     <>
       <section id="center">
