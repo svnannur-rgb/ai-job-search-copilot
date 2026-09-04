@@ -4,7 +4,7 @@ import './App.css'
 function App() {
   const [resumeFile, setResumeFile] = useState<File | null>(null)
   const [jobDescription, setJobDescription] = useState('')
-
+  const [analysis, setAnalysis] = useState('')
 
   const handleAnalyze = () => {
     if (!resumeFile) {
@@ -29,6 +29,8 @@ fetch('http://127.0.0.1:8000/analyze', {
   .then((response) => response.json())
   .then((data) => {
     console.log(data)
+    setAnalysis(data.analysis)
+
   })
 }
 
@@ -73,6 +75,13 @@ fetch('http://127.0.0.1:8000/analyze', {
 <button type="button" onClick={handleAnalyze}>
   Analyze Match
 </button>
+
+{analysis && (
+  <div>
+    <h2>AI Analysis</h2>
+    <p>{analysis}</p>
+  </div>
+)}
       </section>
     </>
   )
