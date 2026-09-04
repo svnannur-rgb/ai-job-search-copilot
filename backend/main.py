@@ -49,7 +49,11 @@ Job Description:
 {job_description}
 
 Analyze how well this resume matches the job description.
-"""
+
+Only use evidence that is explicitly present in the resume.
+Do not invent skills, tools, experience, achievements, or responsibilities.
+If a skill is not supported by the resume, label it as missing or not demonstrated.
+Do not recommend resume bullets that claim experience the candidate has not actually shown."""
     )
 
     return {
