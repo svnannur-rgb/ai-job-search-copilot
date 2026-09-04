@@ -1,5 +1,6 @@
 from fastapi import FastAPI, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
+from pypdf import PdfReader
 
 app = FastAPI()
 
@@ -25,7 +26,15 @@ async def analyze_resume(
     resume: UploadFile = File(...),
     job_description: str = Form(...)
 ):
+    pdf_reader = PdfReader(resume.file)
+
+    resume_text = ""
+
+    for page in pdf_reader.pages:
+        resume_text += page.extract_text() or ""
+
     return {
         "filename": resume.filename,
-        "job_description": job_description
+        "job_description": job_description,
+        "resume_text_preview": resume_text[:500]
     }
