@@ -16,8 +16,12 @@ function App() {
       alert('Please paste a job description.')
       return
     }
-    console.log('Resume uploaded:', resumeFile.name)
-    console.log('Job description:', jobDescription)
+    
+    fetch('http://127.0.0.1:8000/test')
+      .then((response) => response.json())
+      .then((data) => {
+        console.log(data)
+      })
   }
   return (
     <>
