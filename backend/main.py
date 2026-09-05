@@ -40,10 +40,12 @@ class ApplicationAssistantResponse(BaseModel):
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "https://ai-job-search-copilot-ten.vercel.app",
-    ],
+   allow_origins=[
+    "http://localhost:5173",
+    "http://localhost:5174",
+    "http://localhost:5175",
+    "https://ai-job-search-copilot-ten.vercel.app",
+],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -191,8 +193,15 @@ Question:
 {question}
 
 Answer the question using only the resume evidence provided.
+
+Always provide a clear, concise answer in the "answer" field.
+The "answer" field must not be empty.
+Summarize the relevant experience in 2-4 sentences.
+
+Also provide the specific supporting resume evidence in the "evidence" field.
+
 Do not invent experience, skills, tools, or achievements.
-If the evidence does not support an answer, clearly say that the resume does not demonstrate it.
+If the evidence does not support an answer, clearly state in the "answer" field that the resume does not demonstrate it.
 """
     )
     answer = response.output_parsed
@@ -286,10 +295,20 @@ async def agent(
     request: str = Form(...)
 ):
     response = client.responses.create(
-        model="gpt-5-mini",
-        input=request,
-        tools=[resume_search_tool]
-    )
+    model="gpt-5-mini",
+    input=f"""
+You are a grounded career assistant.
+
+Only make claims that are supported by the candidate's resume.
+Do not invent, estimate, exaggerate, or suggest adding metrics that are not present in the resume.
+If resume evidence is needed, use the search_resume tool.
+Keep responses concise, professional, and easy to read.
+
+User request:
+{request}
+""",
+    tools=[resume_search_tool]
+)
     
     tool_call = next(
         (item for item in response.output if item.type == "function_call"),

@@ -152,6 +152,7 @@ const handleAgentRequest = () => {
     <>
       <section id="center">
         <div>
+        <span className="hero-badge">AI-Powered Resume Intelligence</span>
           <h1>AI Job Search Copilot</h1>
           <p>
             Upload your resume and compare it against a job description.
@@ -159,6 +160,9 @@ const handleAgentRequest = () => {
         </div>
         <div>
   <h2>Upload Resume</h2>
+  <p className="section-description">
+    Upload a PDF resume to begin your AI-powered job match analysis.
+  </p>
 
   <input
     type="file"
@@ -177,6 +181,9 @@ const handleAgentRequest = () => {
 
 <div>
   <h2>Job Description</h2>
+  <p className="section-description">
+    Paste the role description to compare requirements against your resume.
+  </p>
 
   <textarea
     placeholder="Paste the job description here..."
@@ -187,6 +194,7 @@ const handleAgentRequest = () => {
 </div>
 
 <button
+  className="primary-action"
   type="button"
   onClick={handleAnalyze}
   disabled={isLoading}
@@ -195,40 +203,53 @@ const handleAgentRequest = () => {
 </button>
 
 {analysis && (
-  <div>
-    <h2>AI Analysis</h2>
-    <p>Match Score: {analysis.match_score}%</p>
+  <div className="analysis-card">
+    <div className="analysis-header">
+      <div>
+        <span className="result-badge">AI ANALYSIS</span>
+        <h2>Resume Match Results</h2>
+      </div>
 
-    <h3>Strong Matches</h3>
+      <div className="score-badge">
+        <span>{analysis.match_score}%</span>
+        <small>Match</small>
+      </div>
+    </div>
+    <div className="result-section strong-section">
+  <h3>Strong Matches</h3>
+  <ul>
+    {analysis.strong_matches.map((item: string, index: number) => (
+      <li key={index}>{item}</li>
+    ))}
+  </ul>
+</div>
 
-    <ul>
-      {analysis.strong_matches.map((item: string, index: number) => (
-        <li key={index}>{item}</li>
-      ))}
-    </ul>
+<div className="result-section partial-section">
+  <h3>Partial Matches</h3>
+  <ul>
+    {analysis.partial_matches.map((item: string, index: number) => (
+      <li key={index}>{item}</li>
+    ))}
+  </ul>
+</div>
 
-    <h3>Partial Matches</h3>
+<div className="result-section missing-section">
+  <h3>Missing Skills</h3>
+  <ul>
+    {analysis.missing_skills.map((item: string, index: number) => (
+      <li key={index}>{item}</li>
+    ))}
+  </ul>
+</div>
 
-<ul>
-  {analysis.partial_matches.map((item: string, index: number) => (
-    <li key={index}>{item}</li>
-  ))}
-</ul>
-
-<h3>Missing Skills</h3>
-
-<ul>
-  {analysis.missing_skills.map((item: string, index: number) => (
-    <li key={index}>{item}</li>
-  ))}
-</ul>
-<h3>Recommendations</h3>
-
-<ul>
-  {analysis.recommendations.map((item: string, index: number) => (
-    <li key={index}>{item}</li>
-  ))}
-</ul>
+<div className="result-section recommendation-section">
+  <h3>Recommendations</h3>
+  <ul>
+    {analysis.recommendations.map((item: string, index: number) => (
+      <li key={index}>{item}</li>
+    ))}
+  </ul>
+</div>
 
   </div>
 )}
@@ -242,37 +263,49 @@ const handleAgentRequest = () => {
     onChange={(event) => setResumeQuestion(event.target.value)}
   />
 
-<button onClick={handleAskResume} disabled={isLoading}>
-  Ask
-</button>
+  <button onClick={handleAskResume} disabled={isLoading}>
+    Ask
+  </button>
 
-{resumeAnswer && (
-  <div>
+  {resumeAnswer && (
+  <div className="response-box">
     <h3>Answer</h3>
-    <p>{resumeAnswer.answer}</p>
-    <h3>Resume Evidence</h3>
 
-<ul>
-  {resumeAnswer.evidence.map((item: string, index: number) => (
-    <li key={index}>{item}</li>
-  ))}
-</ul>
-  </div>
-)}
+    <div className="answer-text">
+      {resumeAnswer.answer}
+    </div>
+
+    <h3>Resume Evidence</h3>
+      <ul>
+        {resumeAnswer.evidence.map((item: string, index: number) => (
+          <li key={index}>{item}</li>
+        ))}
+      </ul>
+    </div>
+  )}
+</div>
+
 <div>
   <h2>Interview Questions</h2>
 
-  <button onClick={handleGenerateInterviewQuestions}disabled={isLoading}>
+  <button
+    onClick={handleGenerateInterviewQuestions}
+    disabled={isLoading}
+  >
     Generate Interview Questions
   </button>
-</div>
-{interviewQuestions.length > 0 && (
-  <ul>
+
+  {interviewQuestions.length > 0 && (
+  <div className="interview-question-list">
     {interviewQuestions.map((question: string, index: number) => (
-      <li key={index}>{question}</li>
+      <div className="interview-question-card" key={index}>
+        <span className="question-number">Question {index + 1}</span>
+        <p>{question}</p>
+      </div>
     ))}
-  </ul>
+  </div>
 )}
+</div>
 
 <div>
   <h2>Application Assistant</h2>
@@ -284,18 +317,23 @@ const handleAgentRequest = () => {
     onChange={(event) => setApplicationQuestion(event.target.value)}
   />
 
-  <button onClick={handleApplicationAssistant}disabled={isLoading}>
+  <button
+    onClick={handleApplicationAssistant}
+    disabled={isLoading}
+  >
     Generate Response
   </button>
 
   {applicationResponse && (
-  <div>
+  <div className="response-box">
     <h3>Generated Response</h3>
-    <p>{applicationResponse}</p>
+
+    <div className="answer-text">
+      {applicationResponse}
+    </div>
   </div>
 )}
 </div>
-
 
 <div>
   <h2>Career Agent</h2>
@@ -307,19 +345,21 @@ const handleAgentRequest = () => {
     onChange={(event) => setAgentRequest(event.target.value)}
   />
 
-  <button onClick={handleAgentRequest}disabled={isLoading}>
+  <button onClick={handleAgentRequest} disabled={isLoading}>
     Ask Agent
   </button>
 
   {agentResponse && (
-    <div>
-      <h3>Agent Response</h3>
-      <p>{agentResponse}</p>
+  <div className="response-box">
+    <h3>Agent Response</h3>
+
+    <div className="answer-text">
+      {agentResponse}
     </div>
-  )}
+  </div>
+)}
 </div>
 
-</div>
       </section>
     </>
   )
