@@ -1,10 +1,17 @@
 import { useState } from 'react'
 import './App.css'
 
+interface ResumeAnalysis {
+  match_score: number
+  strong_matches: string[]
+  partial_matches: string[]
+  missing_skills: string[]
+  recommendations: string[]
+}
 function App() {
   const [resumeFile, setResumeFile] = useState<File | null>(null)
   const [jobDescription, setJobDescription] = useState('')
-  const [analysis, setAnalysis] = useState<any>(null)
+  const [analysis, setAnalysis] = useState<ResumeAnalysis | null>(null)
   const handleAnalyze = () => {
     if (!resumeFile) {
       alert('Please upload a resume.')
