@@ -8,10 +8,19 @@ interface ResumeAnalysis {
   missing_skills: string[]
   recommendations: string[]
 }
+
+interface ResumeQuestionAnswer {
+  answer: string
+  evidence: string[]
+}
 function App() {
   const [resumeFile, setResumeFile] = useState<File | null>(null)
   const [jobDescription, setJobDescription] = useState('')
   const [analysis, setAnalysis] = useState<ResumeAnalysis | null>(null)
+  const [resumeQuestion, setResumeQuestion] = useState('')
+  const [interviewQuestions, setInterviewQuestions] = useState<string[]>([])
+  const [resumeAnswer, setResumeAnswer] = useState<ResumeQuestionAnswer | null>(null)
+
   const handleAnalyze = () => {
     if (!resumeFile) {
       alert('Please upload a resume.')
@@ -39,7 +48,35 @@ fetch('http://127.0.0.1:8000/analyze', {
 
   })
 }
+const handleAskResume = () => {
+  const formData = new FormData()
+  formData.append('question', resumeQuestion)
 
+  fetch('http://127.0.0.1:8000/ask', {
+    method: 'POST',
+    body: formData,
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      console.log(data)
+      setResumeAnswer(data.answer)
+    })
+}
+
+const handleGenerateInterviewQuestions = () => {
+  const formData = new FormData()
+  formData.append('job_description', jobDescription)
+
+  fetch('http://127.0.0.1:8000/interview-questions', {
+    method: 'POST',
+    body: formData,
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      console.log(data)
+      setInterviewQuestions(data.questions)
+    })
+}
   return (
     <>
       <section id="center">
@@ -120,6 +157,49 @@ fetch('http://127.0.0.1:8000/analyze', {
 
   </div>
 )}
+<div>
+  <h2>Ask My Resume</h2>
+
+  <input
+    type="text"
+    placeholder="Ask a question about your resume..."
+    value={resumeQuestion}
+    onChange={(event) => setResumeQuestion(event.target.value)}
+  />
+
+ <button onClick={handleAskResume}>
+  Ask
+</button>
+
+{resumeAnswer && (
+  <div>
+    <h3>Answer</h3>
+    <p>{resumeAnswer.answer}</p>
+    <h3>Resume Evidence</h3>
+
+<ul>
+  {resumeAnswer.evidence.map((item: string, index: number) => (
+    <li key={index}>{item}</li>
+  ))}
+</ul>
+  </div>
+)}
+<div>
+  <h2>Interview Questions</h2>
+
+  <button onClick={handleGenerateInterviewQuestions}>
+    Generate Interview Questions
+  </button>
+</div>
+{interviewQuestions.length > 0 && (
+  <ul>
+    {interviewQuestions.map((question: string, index: number) => (
+      <li key={index}>{question}</li>
+    ))}
+  </ul>
+)}
+
+</div>
       </section>
     </>
   )
