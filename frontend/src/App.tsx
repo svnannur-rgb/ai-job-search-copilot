@@ -23,6 +23,7 @@ function App() {
   const [applicationQuestion, setApplicationQuestion] = useState('')
   const [applicationResponse, setApplicationResponse] = useState('')
   const [agentRequest, setAgentRequest] = useState('')
+  const [coverLetter, setCoverLetter] = useState('')
   const [agentResponse, setAgentResponse] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000'
@@ -125,7 +126,28 @@ const handleApplicationAssistant = () => {
     setIsLoading(false)
   })
 }
+const handleGenerateCoverLetter = () => {
+  setIsLoading(true)
 
+  const formData = new FormData()
+  formData.append('job_description', jobDescription)
+
+  fetch(`${API_URL}/cover-letter`, {
+    method: 'POST',
+    body: formData,
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      setCoverLetter(data.cover_letter)
+    })
+    .catch((error) => {
+      console.error(error)
+      alert('Something went wrong while generating the cover letter.')
+    })
+    .finally(() => {
+      setIsLoading(false)
+    })
+}
 const handleAgentRequest = () => {
   setIsLoading(true)  
   const formData = new FormData()
@@ -254,11 +276,13 @@ const handleAgentRequest = () => {
   </div>
 )}
 <div>
-  <h2>Ask My Resume</h2>
-
+<h2>Resume Evidence Finder</h2>
+<p className="section-description">
+  Find relevant experience from your resume for skills, interview questions, or job requirements.
+</p>
   <input
     type="text"
-    placeholder="Ask a question about your resume..."
+    placeholder="e.g. What experience demonstrates my AWS skills?"
     value={resumeQuestion}
     onChange={(event) => setResumeQuestion(event.target.value)}
   />
@@ -309,10 +333,12 @@ const handleAgentRequest = () => {
 
 <div>
   <h2>Application Assistant</h2>
-
+  <p className="section-description">
+  Draft tailored answers to job application questions using your resume and the job description.
+</p>
   <input
     type="text"
-    placeholder="Enter an application question..."
+    placeholder="e.g. Why are you a good fit for this role?"
     value={applicationQuestion}
     onChange={(event) => setApplicationQuestion(event.target.value)}
   />
@@ -336,11 +362,40 @@ const handleAgentRequest = () => {
 </div>
 
 <div>
+  <h2>Personalized Cover Letter</h2>
+
+  <p className="section-description">
+    Generate a tailored cover letter using your resume and the job description.
+  </p>
+
+  <button
+    onClick={handleGenerateCoverLetter}
+    disabled={isLoading}
+  >
+    Generate Cover Letter
+  </button>
+
+  {coverLetter && (
+    <div className="response-box">
+      <h3>Your Cover Letter</h3>
+
+      <div className="answer-text">
+        {coverLetter}
+      </div>
+    </div>
+  )}
+</div>
+
+<div>
   <h2>Career Agent</h2>
+
+  <p className="section-description">
+  Get strategic guidance on how to position your experience for a role. The agent can search your resume when relevant.
+</p>
 
   <input
     type="text"
-    placeholder="Ask the agent something..."
+    placeholder="e.g. Which experiences should I emphasize for this role?"
     value={agentRequest}
     onChange={(event) => setAgentRequest(event.target.value)}
   />

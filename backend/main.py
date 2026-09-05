@@ -38,6 +38,9 @@ class InterviewQuestions(BaseModel):
 class ApplicationAssistantResponse(BaseModel):
     response: str
 
+class CoverLetterResponse(BaseModel):
+    cover_letter: str
+
 app.add_middleware(
     CORSMiddleware,
    allow_origins=[
@@ -338,4 +341,45 @@ User request:
 
     return {
         "response": response.output_text
+    }
+
+
+@app.post("/cover-letter")
+async def generate_cover_letter(
+    job_description: str = Form(...)
+):
+    job_embedding = create_embedding(job_description)
+
+    results = resume_collection.query(
+        query_embeddings=[job_embedding],
+        n_results=3
+    )
+
+    retrieved_chunks = results["documents"][0]
+    retrieved_context = "\n\n".join(retrieved_chunks)
+
+    response = client.responses.parse(
+        model="gpt-5-mini",
+        text_format=CoverLetterResponse,
+        input=f"""
+Resume Evidence:
+{retrieved_context}
+
+Job Description:
+{job_description}
+
+Write a concise, professional cover letter tailored to this role.
+
+Use only experience, skills, tools, and achievements supported by the resume evidence.
+Do not invent or exaggerate qualifications.
+Focus on the candidate's strongest relevant experience for the job description.
+Write in first person so the candidate can use and edit the letter directly.
+Keep it to approximately 3-4 short paragraphs.
+"""
+    )
+
+    cover_letter = response.output_parsed
+
+    return {
+        "cover_letter": cover_letter.cover_letter
     }

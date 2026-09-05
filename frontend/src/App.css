@@ -452,3 +452,7 @@ input[type='file']:hover {
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
+
+.answer-text {
+  white-space: pre-line;
+}
