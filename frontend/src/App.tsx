@@ -20,6 +20,12 @@ function App() {
   const [resumeQuestion, setResumeQuestion] = useState('')
   const [interviewQuestions, setInterviewQuestions] = useState<string[]>([])
   const [resumeAnswer, setResumeAnswer] = useState<ResumeQuestionAnswer | null>(null)
+  const [applicationQuestion, setApplicationQuestion] = useState('')
+  const [applicationResponse, setApplicationResponse] = useState('')
+  const [agentRequest, setAgentRequest] = useState('')
+  const [agentResponse, setAgentResponse] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
+  const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000'
 
   const handleAnalyze = () => {
     if (!resumeFile) {
@@ -31,51 +37,116 @@ function App() {
       alert('Please paste a job description.')
       return
     }
-    
+    setIsLoading(true)
     const formData = new FormData()
 
 formData.append('resume', resumeFile)
 formData.append('job_description', jobDescription)
 
-fetch('http://127.0.0.1:8000/analyze', {
+fetch(`${API_URL}/analyze`, {
   method: 'POST',
   body: formData,
 })
   .then((response) => response.json())
   .then((data) => {
-    console.log(data)
     setAnalysis(data.analysis)
-
+  })
+  .catch((error) => {
+    console.error(error)
+    alert('Something went wrong while analyzing the resume.')
+  })
+  .finally(() => {
+    setIsLoading(false)
   })
 }
 const handleAskResume = () => {
+  setIsLoading(true)
   const formData = new FormData()
   formData.append('question', resumeQuestion)
 
-  fetch('http://127.0.0.1:8000/ask', {
+  fetch(`${API_URL}/ask`, {
     method: 'POST',
     body: formData,
   })
     .then((response) => response.json())
     .then((data) => {
-      console.log(data)
       setResumeAnswer(data.answer)
+    })
+    .catch((error) => {
+      console.error(error)
+      alert('Something went wrong while answering your question.')
+    })
+    .finally(() => {
+      setIsLoading(false)
     })
 }
 
 const handleGenerateInterviewQuestions = () => {
+  setIsLoading(true)  
   const formData = new FormData()
   formData.append('job_description', jobDescription)
 
-  fetch('http://127.0.0.1:8000/interview-questions', {
+  fetch(`${API_URL}/interview-questions`, {
+  method: 'POST',
+  body: formData,
+})
+  .then((response) => response.json())
+  .then((data) => {
+    setInterviewQuestions(data.questions)
+  })
+  .catch((error) => {
+    console.error(error)
+    alert('Something went wrong while generating interview questions.')
+  })
+  .finally(() => {
+    setIsLoading(false)
+  })
+}
+const handleApplicationAssistant = () => {
+  setIsLoading(true)  
+  const formData = new FormData()
+
+  formData.append('question', applicationQuestion)
+  formData.append('job_description', jobDescription)
+
+  fetch(`${API_URL}/application-assistant`, {
     method: 'POST',
     body: formData,
   })
-    .then((response) => response.json())
-    .then((data) => {
-      console.log(data)
-      setInterviewQuestions(data.questions)
-    })
+  .then((response) => response.json())
+  .then((data) => {
+    setApplicationResponse(data.response)
+  })
+  .catch((error) => {
+    console.error(error)
+    alert('Something went wrong while generating the application response.')
+  })
+  .finally(() => {
+    setIsLoading(false)
+  })
+}
+
+const handleAgentRequest = () => {
+  setIsLoading(true)  
+  const formData = new FormData()
+
+  formData.append('request', agentRequest)
+
+  fetch(`${API_URL}/agent`, {
+    method: 'POST',
+    body: formData,
+  })
+  .then((response) => response.json())
+  .then((data) => {
+    setAgentResponse(data.response)
+  })
+  .catch((error) => {
+    console.error(error)
+    alert('Something went wrong while using the career agent.')
+  })
+  .finally(() => {
+    setIsLoading(false)
+  })
 }
   return (
     <>
@@ -115,8 +186,12 @@ const handleGenerateInterviewQuestions = () => {
   />
 </div>
 
-<button type="button" onClick={handleAnalyze}>
-  Analyze Match
+<button
+  type="button"
+  onClick={handleAnalyze}
+  disabled={isLoading}
+>
+  {isLoading ? 'Analyzing...' : 'Analyze Match'}
 </button>
 
 {analysis && (
@@ -167,7 +242,7 @@ const handleGenerateInterviewQuestions = () => {
     onChange={(event) => setResumeQuestion(event.target.value)}
   />
 
- <button onClick={handleAskResume}>
+<button onClick={handleAskResume} disabled={isLoading}>
   Ask
 </button>
 
@@ -187,7 +262,7 @@ const handleGenerateInterviewQuestions = () => {
 <div>
   <h2>Interview Questions</h2>
 
-  <button onClick={handleGenerateInterviewQuestions}>
+  <button onClick={handleGenerateInterviewQuestions}disabled={isLoading}>
     Generate Interview Questions
   </button>
 </div>
@@ -198,6 +273,51 @@ const handleGenerateInterviewQuestions = () => {
     ))}
   </ul>
 )}
+
+<div>
+  <h2>Application Assistant</h2>
+
+  <input
+    type="text"
+    placeholder="Enter an application question..."
+    value={applicationQuestion}
+    onChange={(event) => setApplicationQuestion(event.target.value)}
+  />
+
+  <button onClick={handleApplicationAssistant}disabled={isLoading}>
+    Generate Response
+  </button>
+
+  {applicationResponse && (
+  <div>
+    <h3>Generated Response</h3>
+    <p>{applicationResponse}</p>
+  </div>
+)}
+</div>
+
+
+<div>
+  <h2>Career Agent</h2>
+
+  <input
+    type="text"
+    placeholder="Ask the agent something..."
+    value={agentRequest}
+    onChange={(event) => setAgentRequest(event.target.value)}
+  />
+
+  <button onClick={handleAgentRequest}disabled={isLoading}>
+    Ask Agent
+  </button>
+
+  {agentResponse && (
+    <div>
+      <h3>Agent Response</h3>
+      <p>{agentResponse}</p>
+    </div>
+  )}
+</div>
 
 </div>
       </section>

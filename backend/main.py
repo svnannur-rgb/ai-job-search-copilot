@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 from openai import OpenAI
 from pydantic import BaseModel
 import chromadb
+import json
 
 load_dotenv()
 
@@ -33,6 +34,9 @@ class ResumeQuestionAnswer(BaseModel):
 
 class InterviewQuestions(BaseModel):
     questions: list[str]
+
+class ApplicationAssistantResponse(BaseModel):
+    response: str
 
 app.add_middleware(
     CORSMiddleware,
@@ -67,6 +71,38 @@ def create_embedding(text: str) -> list[float]:
     )
 
     return response.data[0].embedding
+
+
+def search_resume(query: str) -> str:
+    query_embedding = create_embedding(query)
+
+    results = resume_collection.query(
+        query_embeddings=[query_embedding],
+        n_results=3
+    )
+
+    retrieved_chunks = results["documents"][0]
+
+    return "\n\n".join(retrieved_chunks)
+
+resume_search_tool = {
+    "type": "function",
+    "name": "search_resume",
+    "description": "Search the candidate's resume for relevant evidence.",
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "query": {
+                "type": "string",
+                "description": "What resume evidence should be searched for."
+            }
+        },
+        "required": ["query"],
+        "additionalProperties": False
+    },
+    "strict": True
+}    
+
 @app.post("/analyze")
 async def analyze_resume(
     resume: UploadFile = File(...),
@@ -140,7 +176,6 @@ async def ask_resume(
 
     retrieved_chunks = results["documents"][0]
     retrieved_context = "\n\n".join(retrieved_chunks)
-    print(retrieved_chunks)
 
     response = client.responses.parse(
         model="gpt-5-mini",
@@ -199,3 +234,86 @@ Focus on areas the interviewer is likely to probe based on the job requirements 
     return {
         "questions": interview_questions.questions
     }    
+
+@app.post("/application-assistant")
+async def application_assistant(
+    question: str = Form(...),
+    job_description: str = Form(...)
+):
+    question_embedding = create_embedding(
+        question + "\n" + job_description
+    )
+    results = resume_collection.query(
+        query_embeddings=[question_embedding],
+        n_results=3
+    )
+
+    retrieved_chunks = results["documents"][0]
+    retrieved_context = "\n\n".join(retrieved_chunks)
+    response = client.responses.parse(
+        model="gpt-5-mini",
+        text_format=ApplicationAssistantResponse,
+        input=f"""
+Resume Evidence:
+{retrieved_context}
+
+Job Description:
+{job_description}
+
+Application Question:
+{question}
+
+Write a concise, professional response to the application question.
+
+Use only experience, skills, tools, and achievements supported by the resume evidence.
+Do not invent or exaggerate qualifications.
+Tailor the response to the job description.
+Write in first person so the candidate can use the response directly.
+"""
+    )
+
+    application_response = response.output_parsed
+
+    return {
+        "response": application_response.response
+    }
+
+@app.post("/agent")
+async def agent(
+    request: str = Form(...)
+):
+    response = client.responses.create(
+        model="gpt-5-mini",
+        input=request,
+        tools=[resume_search_tool]
+    )
+    
+    tool_call = next(
+        (item for item in response.output if item.type == "function_call"),
+        None
+    )
+    if tool_call:
+        arguments = json.loads(tool_call.arguments)
+        query = arguments["query"]
+
+        tool_result = search_resume(query)
+        final_response = client.responses.create(
+            model="gpt-5-mini",
+            previous_response_id=response.id,
+            input=[
+                {
+                    "type": "function_call_output",
+                    "call_id": tool_call.call_id,
+                    "output": tool_result
+                }
+            ],
+            tools=[resume_search_tool]
+        )
+
+        return {
+            "response": final_response.output_text
+        }
+
+    return {
+        "response": response.output_text
+    }
