@@ -4,8 +4,7 @@ import './App.css'
 function App() {
   const [resumeFile, setResumeFile] = useState<File | null>(null)
   const [jobDescription, setJobDescription] = useState('')
-  const [analysis, setAnalysis] = useState('')
-
+  const [analysis, setAnalysis] = useState<any>(null)
   const handleAnalyze = () => {
     if (!resumeFile) {
       alert('Please upload a resume.')
@@ -79,7 +78,39 @@ fetch('http://127.0.0.1:8000/analyze', {
 {analysis && (
   <div>
     <h2>AI Analysis</h2>
-    <p>{analysis}</p>
+    <p>Match Score: {analysis.match_score}%</p>
+
+    <h3>Strong Matches</h3>
+
+    <ul>
+      {analysis.strong_matches.map((item: string, index: number) => (
+        <li key={index}>{item}</li>
+      ))}
+    </ul>
+
+    <h3>Partial Matches</h3>
+
+<ul>
+  {analysis.partial_matches.map((item: string, index: number) => (
+    <li key={index}>{item}</li>
+  ))}
+</ul>
+
+<h3>Missing Skills</h3>
+
+<ul>
+  {analysis.missing_skills.map((item: string, index: number) => (
+    <li key={index}>{item}</li>
+  ))}
+</ul>
+<h3>Recommendations</h3>
+
+<ul>
+  {analysis.recommendations.map((item: string, index: number) => (
+    <li key={index}>{item}</li>
+  ))}
+</ul>
+
   </div>
 )}
       </section>

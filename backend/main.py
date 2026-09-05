@@ -3,8 +3,16 @@ from fastapi.middleware.cors import CORSMiddleware
 from pypdf import PdfReader
 from dotenv import load_dotenv
 from openai import OpenAI
+from pydantic import BaseModel
 
 load_dotenv()
+
+class ResumeAnalysis(BaseModel):
+    match_score: int
+    strong_matches: list[str]
+    partial_matches: list[str]
+    missing_skills: list[str]
+    recommendations: list[str]
 
 app = FastAPI()
 
@@ -39,8 +47,9 @@ async def analyze_resume(
     for page in pdf_reader.pages:
         resume_text += page.extract_text() or ""
 
-    response = client.responses.create(
+    response = client.responses.parse(
         model="gpt-5-mini",
+        text_format=ResumeAnalysis,
         input=f"""
 Resume:
 {resume_text}
@@ -53,12 +62,14 @@ Analyze how well this resume matches the job description.
 Only use evidence that is explicitly present in the resume.
 Do not invent skills, tools, experience, achievements, or responsibilities.
 If a skill is not supported by the resume, label it as missing or not demonstrated.
-Do not recommend resume bullets that claim experience the candidate has not actually shown."""
+Do not recommend resume bullets that claim experience the candidate has not actually shown.
+"""
     )
+    analysis = response.output_parsed
 
     return {
         "filename": resume.filename,
         "job_description": job_description,
         "resume_text_preview": resume_text[:500],
-        "analysis": response.output_text
+        "analysis": analysis.model_dump()
     }
