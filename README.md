@@ -1,19 +1,36 @@
 # AI Job Search Copilot
 
-An AI-powered job search assistant that analyzes resumes against job descriptions, identifies skill gaps, answers questions using grounded resume evidence, generates interview questions, assists with job application responses, and uses an AI career agent with tool calling.
+An AI-powered job search assistant that helps job seekers evaluate their fit for a role and prepare stronger, evidence-based applications.
+
+Users can upload a resume and job description to analyze skill alignment, identify gaps, retrieve relevant resume evidence, generate tailored interview questions and application responses, create personalized cover letters, and receive career guidance through an AI agent with resume-search capabilities.
 
 ## Live Demo
 
 [Try the AI Job Search Copilot](https://ai-job-search-copilot-ten.vercel.app)
 
+## Why I Built This
+
+Job descriptions often contain long lists of requirements, while a candidate's relevant experience may be scattered across different roles, projects, and skills on their resume.
+
+I built AI Job Search Copilot to help job seekers connect those two sources of information. The application uses AI and semantic retrieval to identify relevant resume evidence, evaluate job alignment, and help candidates prepare tailored application materials without inventing experience they do not have.
+
+The project also explores where different AI architectures are most useful: full-context analysis for holistic resume matching, RAG for targeted evidence retrieval, structured outputs for predictable analysis, and tool calling for agentic workflows.
+
 ## Features
 
 - **Resume–Job Match Analysis** — Compares a resume against a job description and returns a structured match score, strong matches, partial matches, missing skills, and grounded recommendations.
-- **Grounded Resume Analysis** — Uses explicit resume evidence to reduce hallucinations and avoid inventing unsupported skills or experience.
-- **Ask My Resume (RAG)** — Uses embeddings and semantic retrieval to find relevant resume content and answer questions using retrieved evidence.
-- **Interview Question Generator** — Generates role-specific interview questions based on the provided job description.
-- **Application Assistant** — Creates tailored application responses grounded in the candidate's resume and target role.
-- **AI Career Agent** — Uses tool/function calling to decide when resume retrieval is needed and dynamically searches resume evidence before responding.
+
+- **Grounded AI Analysis** — Uses explicit resume evidence and grounding rules to reduce hallucinations and avoid inventing unsupported skills, experience, or achievements.
+
+- **Resume Evidence Finder (RAG)** — Uses embeddings and semantic retrieval to surface relevant resume experience for skills, interview questions, and job requirements.
+
+- **Interview Question Generator** — Generates tailored interview questions based on the candidate's resume and target job description.
+
+- **Application Assistant** — Drafts personalized responses to job application questions using resume evidence and the target role.
+
+- **Personalized Cover Letter Generator** — Creates a role-specific cover letter using relevant experience from the candidate's resume and the job description.
+
+- **AI Career Agent** — Uses tool/function calling to determine when resume retrieval is needed and dynamically searches resume evidence to provide grounded career guidance.
 
 ## Tech Stack
 
@@ -59,25 +76,39 @@ The application separates the frontend, backend, AI workflows, and retrieval lay
 8. The frontend is deployed on **Vercel**, while the FastAPI backend is deployed on **Render**.
 
 ### System Flow
-
-```text
 User
   ↓
-React + TypeScript (Vercel)
+React + TypeScript Frontend (Vercel)
   ↓
-FastAPI (Render)
-  ├── Resume / Job Match → OpenAI Structured Output
-  ├── Interview Questions → OpenAI
-  ├── Application Assistant → OpenAI
-  └── Career Agent → Tool Calling
-                         ↓
-                   Resume Search
-                         ↓
-OpenAI Embeddings → ChromaDB → Retrieved Resume Evidence
-                         ↓
-                   Grounded Response
-
-```
+FastAPI Backend (Render)
+  │
+  ├── Resume–Job Match
+  │      └── Full Resume + Job Description
+  │              ↓
+  │         OpenAI Structured Output
+  │
+  ├── Resume Evidence Finder
+  │      └── RAG / Semantic Search
+  │
+  ├── Interview Question Generator
+  │      └── Retrieved Resume Evidence + Job Description
+  │
+  ├── Application Assistant
+  │      └── Retrieved Resume Evidence + Job Description
+  │
+  ├── Personalized Cover Letter
+  │      └── Retrieved Resume Evidence + Job Description
+  │
+  └── AI Career Agent
+         └── Tool / Function Calling
+                  ↓
+             Resume Search
+                  ↓
+       OpenAI Embeddings → ChromaDB
+                  ↓
+         Relevant Resume Evidence
+                  ↓
+           Grounded Response
 ## RAG Design Decision
 
 During development, two approaches were evaluated for resume analysis:
@@ -85,14 +116,11 @@ During development, two approaches were evaluated for resume analysis:
 - **Full-resume context** for holistic resume-to-job matching
 - **Retrieval-Augmented Generation (RAG)** for targeted resume questions
 
-RAG retrieval works well when a user asks a specific question because semantic search can retrieve the most relevant resume chunks. However, using only the top retrieved chunks for overall job-match analysis can omit relevant experience located elsewhere in the resume.
-
+RAG retrieval works well for targeted tasks because semantic search can retrieve the resume chunks most relevant to a specific skill, requirement, or question.
 For this reason, the application uses:
 
 - **Full resume context** for overall resume–job match analysis
-- **RAG retrieval** for targeted "Ask My Resume" questions and resume-search tools
-
-This hybrid approach preserves broader context for holistic analysis while using semantic retrieval where focused evidence is most useful.
+- **RAG retrieval** for the Resume Evidence Finder and other workflows that require targeted resume evidence
 ## Grounding & Hallucination Mitigation
 
 Because resume recommendations can become misleading if an LLM invents experience, the application includes explicit grounding rules throughout its AI workflows.
