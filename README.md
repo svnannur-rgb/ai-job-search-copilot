@@ -8,6 +8,44 @@ Users can upload a resume and job description to analyze skill alignment, identi
 
 [Try the AI Job Search Copilot](https://ai-job-search-copilot-ten.vercel.app)
 
+## Screenshots
+
+### Resume–Job Match Analysis
+
+![Resume Match Analysis](docs/screenshots/resume-match.png)
+
+The copilot compares a candidate's resume against a job description and identifies strong matches, partial matches, missing skills, and grounded recommendations.
+
+### Resume Evidence Finder
+
+![Resume Evidence Finder](docs/screenshots/resume-evidence.png)
+
+Semantic retrieval finds relevant resume evidence to answer targeted questions without inventing candidate experience.
+
+### Interview Question Generator
+
+![Interview Question Generator](docs/screenshots/interview-questions.png)
+
+Generates tailored interview questions using the job description and relevant resume evidence.
+
+### Application Assistant
+
+![Application Assistant](docs/screenshots/application-assistant.png)
+
+Drafts grounded responses to job application questions using the candidate's actual resume evidence.
+
+### Personalized Cover Letter
+
+![Personalized Cover Letter](docs/screenshots/cover-letter.png)
+
+Generates a concise cover letter tailored to the candidate's resume and target role.
+
+### AI Career Agent
+
+![AI Career Agent](docs/screenshots/career-agent.png)
+
+Provides strategic career guidance and can search the candidate's resume for supporting evidence when needed.
+
 ## Why I Built This
 
 Job descriptions often contain long lists of requirements, while a candidate's relevant experience may be scattered across different roles, projects, and skills on their resume.
