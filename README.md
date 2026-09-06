@@ -76,6 +76,7 @@ The application separates the frontend, backend, AI workflows, and retrieval lay
 8. The frontend is deployed on **Vercel**, while the FastAPI backend is deployed on **Render**.
 
 ### System Flow
+```text
 User
   ↓
 React + TypeScript Frontend (Vercel)
@@ -109,6 +110,8 @@ FastAPI Backend (Render)
          Relevant Resume Evidence
                   ↓
            Grounded Response
+```
+
 ## RAG Design Decision
 
 During development, two approaches were evaluated for resume analysis:
